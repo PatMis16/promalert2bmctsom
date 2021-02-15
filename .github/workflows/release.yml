@@ -8,6 +8,8 @@ jobs:
   release-linux-386:
     name: release linux/386
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
     # install dependencies
@@ -22,6 +24,8 @@ jobs:
   release-linux-amd64:
     name: release linux/amd64
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
     # install dependencies
@@ -36,6 +40,8 @@ jobs:
   release-linux-arm:
     name: release linux/386
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
     - name: Install all Go dependencies
@@ -49,6 +55,8 @@ jobs:
   release-linux-arm64:
     name: release linux/amd64
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
     - name: Install all Go dependencies
@@ -62,6 +70,8 @@ jobs:
   release-darwin-amd64:
     name: release darwin/amd64
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
     - name: Install all Go dependencies
@@ -75,6 +85,8 @@ jobs:
   release-windows-386:
     name: release windows/386
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
     - name: Install all Go dependencies
@@ -88,6 +100,8 @@ jobs:
   release-windows-amd64:
     name: release windows/amd64
     runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
     - name: Install all Go dependencies
