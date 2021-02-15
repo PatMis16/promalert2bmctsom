@@ -2,7 +2,7 @@
 // Management as event.
 //
 // Author: 	Patrick Mischler (patrick.mischler@itcorncepts.ch)
-// Version: 0.1
+// Version: 0.2
 // Status: experimental
 
 package main
