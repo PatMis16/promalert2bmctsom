@@ -20,7 +20,7 @@ jobs:
         
     #install dependencies
     - name: Install all Go dependencies
-      run: go get
+      run: go get gopkg.in/yaml.v2
 
     - name: Build
       run: go build -v ./...
