@@ -1,0 +1,158 @@
+POST http://localhost:9595
+Accept: application/json
+Content-Type: application/json
+
+{
+  "receiver": "test-receiver",
+  "status": "firing",
+  "alerts": [
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "Many5xxErrors",
+        "instance": "localhost:10000",
+        "job": "demo",
+        "path": "/api/bar",
+        "prometheus": "main",
+        "severity": "critical"
+      },
+      "annotations": {
+        "description": "The 5xx error rate for path /api/bar on localhost:10000 is 0.5931198102016608 %."
+      },
+      "startsAt": "2021-02-11T12:27:31.211457567Z",
+      "endsAt": "2021-02-11T12:29:01.211457567Z",
+      "generatorURL": "http://prometheus-el:9090/graph?g0.expr=sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%2Cstatus%3D~%225..%22%7D%5B1m%5D%29%29+%2F+sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%7D%5B1m%5D%29%29+%2A+100+%3E+0.5&g0.tab=1",
+      "fingerprint": "75a206b6bb74a783"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "Many5xxErrors",
+        "instance": "localhost:10000",
+        "job": "demo",
+        "path": "/api/foo",
+        "prometheus": "main",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "The 5xx error rate for path /api/foo on localhost:10000 is 1.6370106761565837 %."
+      },
+      "startsAt": "2021-02-11T12:26:11.211457567Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://prometheus-el:9090/graph?g0.expr=sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%2Cstatus%3D~%225..%22%7D%5B1m%5D%29%29+%2F+sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%7D%5B1m%5D%29%29+%2A+100+%3E+0.5&g0.tab=1",
+      "fingerprint": "bee2cca8ed9fb704"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "Many5xxErrors",
+        "instance": "localhost:10001",
+        "job": "demo",
+        "path": "/api/bar",
+        "prometheus": "main",
+        "severity": "critical"
+      },
+      "annotations": {
+        "description": "The 5xx error rate for path /api/bar on localhost:10001 is 0.6593406593406596 %."
+      },
+      "startsAt": "2021-02-11T12:29:31.211457567Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://prometheus-el:9090/graph?g0.expr=sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%2Cstatus%3D~%225..%22%7D%5B1m%5D%29%29+%2F+sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%7D%5B1m%5D%29%29+%2A+100+%3E+0.5&g0.tab=1",
+      "fingerprint": "42e66a199de46138"
+    },
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "Many5xxErrors",
+        "instance": "localhost:10001",
+        "job": "demo",
+        "path": "/api/foo",
+        "prometheus": "main",
+        "severity": "critical"
+      },
+      "annotations": {
+        "description": "The 5xx error rate for path /api/foo on localhost:10001 is 0.6189821182943603 %."
+      },
+      "startsAt": "2021-02-11T12:28:06.211457567Z",
+      "endsAt": "2021-02-11T12:30:46.211457567Z",
+      "generatorURL": "http://prometheus-el:9090/graph?g0.expr=sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%2Cstatus%3D~%225..%22%7D%5B1m%5D%29%29+%2F+sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%7D%5B1m%5D%29%29+%2A+100+%3E+0.5&g0.tab=1",
+      "fingerprint": "ba9a73b2e5659aab"
+    },
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "Many5xxErrors",
+        "instance": "localhost:10002",
+        "job": "demo",
+        "path": "/api/bar",
+        "prometheus": "main",
+        "severity": "critical"
+      },
+      "annotations": {
+        "description": "The 5xx error rate for path /api/bar on localhost:10002 is 0.5903187721369539 %."
+      },
+      "startsAt": "2021-02-11T12:27:36.211457567Z",
+      "endsAt": "2021-02-11T12:30:01.211457567Z",
+      "generatorURL": "http://prometheus-el:9090/graph?g0.expr=sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%2Cstatus%3D~%225..%22%7D%5B1m%5D%29%29+%2F+sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%7D%5B1m%5D%29%29+%2A+100+%3E+0.5&g0.tab=1",
+      "fingerprint": "7c0b1b22dd760489"
+    },
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "Many5xxErrors",
+        "instance": "localhost:10002",
+        "job": "demo",
+        "path": "/api/foo",
+        "prometheus": "main",
+        "severity": "critical"
+      },
+      "annotations": {
+        "description": "The 5xx error rate for path /api/foo on localhost:10002 is 1.6332590942835932 %."
+      },
+      "startsAt": "2021-02-11T12:28:31.211457567Z",
+      "endsAt": "2021-02-11T12:30:31.211457567Z",
+      "generatorURL": "http://prometheus-el:9090/graph?g0.expr=sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%2Cstatus%3D~%225..%22%7D%5B1m%5D%29%29+%2F+sum+by%28path%2C+instance%2C+job%29+%28rate%28demo_api_request_duration_seconds_count%7Bjob%3D%22demo%22%7D%5B1m%5D%29%29+%2A+100+%3E+0.5&g0.tab=1",
+      "fingerprint": "5ed15cdd9dea914e"
+    }
+  ],
+  "groupLabels": {
+    "alertname": "Many5xxErrors",
+    "job": "demo"
+  },
+  "commonLabels": {
+    "alertname": "Many5xxErrors",
+    "job": "demo",
+    "prometheus": "main",
+    "severity": "critical"
+  },
+  "commonAnnotations": {},
+  "externalURL": "http://prometheus-el:9093",
+  "version": "4",
+  "groupKey": "{}:{alertname=\"Many5xxErrors\", job=\"demo\"}",
+  "truncatedAlerts": 0
+}
+
+###
+POST https://tsim1.pmts.local:8443//bppmws/api/Event/create?routingId=pncell_tsim1
+Accept: application/json
+Content-Type: application/json
+Authorization: authToken _4e1b47da-b3b9-4f17-b574-05424444c79a
+
+[
+  {
+    "eventSourceHostName":"Test",
+    "eventSourceIPAddress":"",
+    "attributes": {
+      "CLASS":"EVENT",
+      "severity":"CRITICAL",
+      "msg":"Test Message",
+      "mc_object_class":"Huba",
+      "mc_object":"Test",
+      "mc_parameter":"Test"
+    }
+  }
+]
+
+<> 2021-02-11T115658.200.json
+<> 2021-02-11T113926.200.json
+<> 2021-02-11T113854.400.json
