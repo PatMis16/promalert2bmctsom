@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    # install dependencies
+    - name: Install all Go dependencies
+      run: go get gopkg.in/yaml.v2
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -21,6 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    # install dependencies
+    - name: Install all Go dependencies
+      run: go get gopkg.in/yaml.v2
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -32,6 +38,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: Install all Go dependencies
+      run: go get gopkg.in/yaml.v2
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -43,6 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: Install all Go dependencies
+      run: go get gopkg.in/yaml.v2
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -54,6 +64,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: Install all Go dependencies
+      run: go get gopkg.in/yaml.v2
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -65,6 +77,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: Install all Go dependencies
+      run: go get gopkg.in/yaml.v2
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -76,6 +90,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: Install all Go dependencies
+      run: go get gopkg.in/yaml.v2
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
