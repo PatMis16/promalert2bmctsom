@@ -1,122 +1,63 @@
-# on:
-#  push:
-#    tags:
-#      - 'v[0-9]+.*'
-on: release
+on:
+  push:
+    tags:
+      - 'v[0-9]+.*'
 
-name: Build Release
 jobs:
-  release-linux-386:
-    name: release linux/386
+  create_release:
+    name: Create release
     runs-on: ubuntu-latest
+    # Note this. We are going to use that in further jobs.
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
-    - uses: actions/checkout@master
-    # install dependencies
-    - name: Install all Go dependencies
-      run: go get gopkg.in/yaml.v2
-    - name: compile and release
-      uses: ngs/go-release.action@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GOARCH: "386"
-        GOOS: linux
-        EXTRA_FILES: "README.md config.yml" 
-  release-linux-amd64:
-    name: release linux/amd64
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-    - uses: actions/checkout@master
-    # install dependencies
-    - name: Install all Go dependencies
-      run: go get gopkg.in/yaml.v2
-    - name: compile and release
-      uses: ngs/go-release.action@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GOARCH: amd64
-        GOOS: linux
-        EXTRA_FILES: "README.md config.yml"
-  release-linux-arm:
-    name: release linux/386
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-    - uses: actions/checkout@master
-    - name: Install all Go dependencies
-      run: go get gopkg.in/yaml.v2
-    - name: compile and release
-      uses: ngs/go-release.action@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GOARCH: "arm"
-        GOOS: linux
-        EXTRA_FILES: "README.md config.yml"
-  release-linux-arm64:
-    name: release linux/amd64
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-    - uses: actions/checkout@master
-    - name: Install all Go dependencies
-      run: go get gopkg.in/yaml.v2
-    - name: compile and release
-      uses: ngs/go-release.action@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GOARCH: arm64
-        GOOS: linux
-        EXTRA_FILES: "README.md config.yml"
-  release-darwin-amd64:
-    name: release darwin/amd64
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-    - uses: actions/checkout@master
-    - name: Install all Go dependencies
-      run: go get gopkg.in/yaml.v2
-    - name: compile and release
-      uses: ngs/go-release.action@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GOARCH: amd64
-        GOOS: darwin
-        EXTRA_FILES: "README.md config.yml"
-  release-windows-386:
-    name: release windows/386
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-    - uses: actions/checkout@master
-    - name: Install all Go dependencies
-      run: go get gopkg.in/yaml.v2
-    - name: compile and release
-      uses: ngs/go-release.action@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GOARCH: "386"
-        GOOS: windows
-        EXTRA_FILES: "README.md config.yml"
-  release-windows-amd64:
-    name: release windows/amd64
-    runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-    - uses: actions/checkout@master
-    - name: Install all Go dependencies
-      run: go get gopkg.in/yaml.v2
-    - name: compile and release
-      uses: ngs/go-release.action@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GOARCH: amd64
-        GOOS: windows
-        EXTRA_FILES: "README.md config.yml"
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+    release_assets:
+      name: Release assets
+      needs: create_release # we need to know the upload URL
+      runs-on: ${{ matrix.config.os }} # we run many different builds
+      strategy:
+        # just an example matrix
+        matrix:
+          config:
+            - os: ubuntu-latest
+            - os: macos-latest
+            - os: windows-latest
+      steps:
+        # checkout of cource
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Set up Go
+          uses: actions/setup-go@v2
+          with:
+            go-version: 1.15
+          # install dependencies
+        - name: Install all Go dependencies
+          run: go get gopkg.in/yaml.v2
+        - name: compile
+          run: go build promalert2bmctsom.go -o promalert2bmctsom
+        - name: Upload release assets
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ needs.create_release.outputs.upload_url }}
+            # This is how it will be named on the release page. Put hatever name
+            # you like, remember that they need to be different for each platform.
+            # You can choose any build matrix parameters. For Rust I use the
+            # target triple.
+            asset_name: program-name-${{ matrix.config.os }}
+            # The path to the file you want to upload.
+            asset_path: ./
+            # probably you will need to change it, but most likely you are
+            # uploading a binary file
+            asset_content_type: application/octet-stream  
