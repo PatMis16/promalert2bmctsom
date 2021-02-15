@@ -5,6 +5,10 @@ Management.
 The program starts a simple webserver which awaits Prometheus alerts sent from the Prometheus Alertmanager
 via a webhook receiver.
 
+## Prerequisites
+On some Linux platforms musl libc (https://musl.libc.org/) is required in order to run the binary. For example: On Ubuntu you can
+install musl with `sudo apt install musl`.
+
 ## Wrapper Configuration
 The Go programm (wrapper) reads a YAML configuration file. The configuration file contains information about the 
 listening port of the wrapper and data to connect to TrueSight.
