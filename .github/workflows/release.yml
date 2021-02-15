@@ -3,61 +3,29 @@ on:
     tags:
       - 'v[0-9]+.*'
 
+on: 
+  release:
+    types: [created]
+
 jobs:
-  create_release:
-    name: Create release
+  releases-matrix:
+    name: Release Go Binary
     runs-on: ubuntu-latest
-    # Note this. We are going to use that in further jobs.
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    strategy:
+      matrix:
+        # build and publish in parallel: linux/386, linux/amd64, windows/386, windows/amd64, darwin/386, darwin/amd64 
+        goos: [linux, windows, darwin]
+        goarch: ["386", amd64]
     steps:
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-        release_assets:
-          name: Release assets
-          needs: create_release # we need to know the upload URL
-          runs-on: ${{ matrix.config.os }} # we run many different builds
-          strategy:
-            # just an example matrix
-            matrix:
-              config:
-                - os: ubuntu-latest
-                - os: macos-latest
-                - os: windows-latest
-          steps:
-            # checkout of cource
-            - name: Checkout code
-              uses: actions/checkout@v2
-            - name: Set up Go
-              uses: actions/setup-go@v2
-              with:
-                go-version: 1.15
-              # install dependencies
-            - name: Install all Go dependencies
-              run: go get gopkg.in/yaml.v2
-            - name: compile
-              run: go build promalert2bmctsom.go -o promalert2bmctsom
-            - name: Upload release assets
-              uses: actions/upload-release-asset@v1
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                upload_url: ${{ needs.create_release.outputs.upload_url }}
-                # This is how it will be named on the release page. Put hatever name
-                # you like, remember that they need to be different for each platform.
-                # You can choose any build matrix parameters. For Rust I use the
-                # target triple.
-                asset_name: program-name-${{ matrix.config.os }}
-                # The path to the file you want to upload.
-                asset_path: ./
-                # probably you will need to change it, but most likely you are
-                # uploading a binary file
-                asset_content_type: application/octet-stream  
+    - uses: actions/checkout@v2
+    - name: Install all Go dependencies
+      run: go get gopkg.in/yaml.v2
+    - uses: wangyoucao577/go-release-action@v1.14
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        goversion: "https://dl.google.com/go/go1.15.8.linux-amd64.tar.gz"
+        project_path: "./"
+        binary_name: "test-binary"
+        extra_files: README.md config.yml
