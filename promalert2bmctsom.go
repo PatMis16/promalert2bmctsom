@@ -1,3 +1,10 @@
+// A wrapper to receive Prometheus Alerts from Alertmanager via webhook and forward them to BMC TrueSight Operations
+// Management as event.
+//
+// Author: 	Patrick Mischler (patrick.mischler@itcorncepts.ch)
+// Version: 0.1
+// Status: experimental
+
 package main
 
 import (
@@ -18,22 +25,22 @@ import (
 type Config struct {
 	Server struct {
 		ListenPort string `yaml:"listen-port"`
-		TrueSight struct {
-			TSPSServer string `yaml:"tsps-server"`
-			TSPSPort string `yaml:"tsps-port"`
-			TSIMServer string `yaml:"tsim-server"`
-			TSIMPort string `yaml:"tsim-port"`
-			TSCell string `yaml:"ts-cell"`
-			TSUser string `yaml:"ts-user"`
-			TSUserPw string `yaml:"ts-user-pw"`
-			TSTenant string `yaml:"ts-tenant"`
+		TrueSight  struct {
+			TSPSServer   string `yaml:"tsps-server"`
+			TSPSPort     string `yaml:"tsps-port"`
+			TSIMServer   string `yaml:"tsim-server"`
+			TSIMPort     string `yaml:"tsim-port"`
+			TSCell       string `yaml:"ts-cell"`
+			TSUser       string `yaml:"ts-user"`
+			TSUserPw     string `yaml:"ts-user-pw"`
+			TSTenant     string `yaml:"ts-tenant"`
 			TSEventClass string `yaml:"ts-event-class"`
 		}
 	}
 }
 
 func NewConfig(configPath string) (*Config, error) {
-	config :=&Config{}
+	config := &Config{}
 	file, err := os.Open(configPath)
 	if err != nil {
 		return nil, err
@@ -89,9 +96,9 @@ func NewTSEventAttributes(CLASS string, severity string, msg string, mc_object_c
 }
 
 type TSEvent struct {
-	EventSourceHostName string `json:"eventSourceHostName"`
-	EventSourceIPAddress string `json:"eventSourceIPAddress"`
-	Attributes *TSEventAttributes `json:"attributes"`
+	EventSourceHostName  string             `json:"eventSourceHostName"`
+	EventSourceIPAddress string             `json:"eventSourceIPAddress"`
+	Attributes           *TSEventAttributes `json:"attributes"`
 }
 
 func NewTSEvent(eventSourceHostName string, eventSourceIPAddress string, attributes *TSEventAttributes) *TSEvent {
@@ -99,12 +106,12 @@ func NewTSEvent(eventSourceHostName string, eventSourceIPAddress string, attribu
 }
 
 type Labels struct {
-	Alertname string `json:"alertname"`
-	Instance string `json:"instance"`
-	Job string `json:"job"`
-	Path string `json:"path"`
+	Alertname  string `json:"alertname"`
+	Instance   string `json:"instance"`
+	Job        string `json:"job"`
+	Path       string `json:"path"`
 	Prometheus string `json:"prometheus"`
-	Severity string `json:"severity"`
+	Severity   string `json:"severity"`
 }
 
 type Annotations struct {
@@ -112,13 +119,13 @@ type Annotations struct {
 }
 
 type Alert struct {
-	Status string `json:"status"`
-	Labels Labels `json:"labels"`
-	Annotations Annotations `json:"annotations"`
-	StartsAt string `json:"startsAt"`
-	EndsAt string `json:"endsAt"`
-	GeneratorURL string `json:"generatorURL"`
-	Fingerprint string `json:"fingerprint"`
+	Status       string      `json:"status"`
+	Labels       Labels      `json:"labels"`
+	Annotations  Annotations `json:"annotations"`
+	StartsAt     string      `json:"startsAt"`
+	EndsAt       string      `json:"endsAt"`
+	GeneratorURL string      `json:"generatorURL"`
+	Fingerprint  string      `json:"fingerprint"`
 }
 
 type Alerts struct {
@@ -209,7 +216,7 @@ func (config Config) Run() {
 		}
 	})
 	fmt.Println("Server started at port " + config.Server.ListenPort)
-	log.Fatal(http.ListenAndServe(":" + config.Server.ListenPort, nil))
+	log.Fatal(http.ListenAndServe(":"+config.Server.ListenPort, nil))
 }
 
 func main() {
@@ -300,15 +307,14 @@ func SendEventToTS(token string, tsimServer string, tsimPort string, tsCell stri
 
 	fmt.Println(string(eventJSON))
 	//evBody := string(eventJSON)
-	req, err := http.NewRequest("POST", eventUrl,  bytes.NewBuffer(eventJSON))
+	req, err := http.NewRequest("POST", eventUrl, bytes.NewBuffer(eventJSON))
 	if err != nil {
 		log.Fatal("Error reading request. ", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "authToken " + token)
-
+	req.Header.Set("Authorization", "authToken "+token)
 
 	client := &http.Client{Timeout: time.Second * 10}
 
