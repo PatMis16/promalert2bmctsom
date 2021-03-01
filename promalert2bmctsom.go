@@ -13,9 +13,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/patrickmn/go-cache"
+	_ "github.com/patrickmn/go-cache"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
@@ -150,6 +153,16 @@ func newTSToken(token string) *tstoken {
 	}
 }
 
+func RandomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(s)
+}
+
 func (config Config) Run() {
 	tsToken := newTSToken(GetTSToken(
 		config.Server.TrueSight.TSPSServer,
@@ -211,7 +224,12 @@ func (config Config) Run() {
 
 			//events = append(events, eventData)
 			if events != nil {
-				SendEventToTS(tsToken.getToken(), config.Server.TrueSight.TSIMServer, config.Server.TrueSight.TSIMPort, config.Server.TrueSight.TSCell, events)
+				if SendEventToTS(tsToken.getToken(), config.Server.TrueSight.TSIMServer, config.Server.TrueSight.TSIMPort, config.Server.TrueSight.TSCell, events) {
+					log.Println("Event sent to TrueSight.")
+				} else {
+					log.Println("Failed to send event(s) to TrueSight.")
+					promAlertsCache.Add(RandomString(10), events, cache.DefaultExpiration)
+				}
 			}
 
 			//fmt.Print(string(body))
@@ -305,6 +323,7 @@ func VerifyTSToken(token string, tspsServer string, tspsPort string) bool {
 }
 
 func SendEventToTS(token string, tsimServer string, tsimPort string, tsCell string, eventData []*TSEvent) bool {
+	eventSendState := false
 	eventUrl := "https://" + tsimServer + ":" + tsimPort + "/bppmws/api/Event/create?routingId=" + tsCell
 	eventJSON, err := json.Marshal(eventData)
 	if err != nil {
@@ -327,10 +346,15 @@ func SendEventToTS(token string, tsimServer string, tsimPort string, tsCell stri
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println(err)
+	} else {
+		fmt.Println(resp)
+		eventSendState = true
 	}
-	fmt.Println(resp)
-	return true
+	return eventSendState
 }
+
+// Initiate Prometheus Alerts Cache
+var promAlertsCache = cache.New(60*time.Minute, 90*time.Minute)
 
 func main() {
 	// Initialize logging
