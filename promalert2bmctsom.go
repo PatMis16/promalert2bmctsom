@@ -14,7 +14,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/patrickmn/go-cache"
-	_ "github.com/patrickmn/go-cache"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
@@ -353,8 +355,28 @@ func SendEventToTS(token string, tsimServer string, tsimPort string, tsCell stri
 	return eventSendState
 }
 
+func Heartbeat() {
+	// Heartbeat for self-monitoring
+	value := 0
+	fmt.Print("Heartbeat Value: ", value)
+	for true {
+		promalToTSOMHeartbeat.Set(float64(value))
+		if value == 0 {
+			value = 100
+		} else {
+			value = 0
+		}
+		fmt.Println("Heartbeat Value: ", value)
+		time.Sleep(1 * time.Minute)
+	}
+}
+
 // Initiate Prometheus Alerts Cache
 var promAlertsCache = cache.New(60*time.Minute, 90*time.Minute)
+var promalToTSOMHeartbeat = promauto.NewGauge(prometheus.GaugeOpts{
+	Name: "prometheus_alerts_to_tsom_heartbeat",
+	Help: "Prometheus Alerts to TrueSight",
+})
 
 func main() {
 	// Initialize logging
@@ -365,6 +387,7 @@ func main() {
 	}
 	log.SetOutput(logFile)
 	log.Println("Prometheus Alert to BMC TSOM Wrapper started")
+
 	cfgPath, err := ParseFlags()
 	if err != nil {
 		log.Fatal(err)
@@ -373,5 +396,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cfg.Run()
+	// start listening for Prometheus Alerts
+	go cfg.Run()
+	fmt.Println("Hello")
+
+	// Initialize prometheus metering
+
+	fmt.Println("starting heartbeat")
+	go Heartbeat()
+	http.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(":9596", nil)
+	time.Sleep(1 * time.Second)
+
 }
