@@ -1,5 +1,6 @@
 server:
   listen-port: <Listen Port e.g. 9595>
+  prom-metric-port: <Listen Port for providing Prometheus Metrics>
   truesight:
     tsps-server: "<TSPS Server Name>"
     tsps-port: <TSPS Server Port e.g. 8043>

@@ -5,6 +5,10 @@
 // Version: 0.2
 // Status: experimental
 
+// TODO - Documentation: enhance code documentation
+// TODO - Enhance error handling
+// TODO - implement caching mechanism
+
 package main
 
 import (
@@ -29,8 +33,9 @@ import (
 
 type Config struct {
 	Server struct {
-		ListenPort string `yaml:"listen-port"`
-		TrueSight  struct {
+		ListenPort     string `yaml:"listen-port"`
+		PromMetricPort string `yaml:"prom-metric-port"`
+		TrueSight      struct {
 			TSPSServer   string `yaml:"tsps-server"`
 			TSPSPort     string `yaml:"tsps-port"`
 			TSIMServer   string `yaml:"tsim-server"`
@@ -172,15 +177,11 @@ func (config Config) Run() {
 		config.Server.TrueSight.TSUser,
 		config.Server.TrueSight.TSUserPw,
 		config.Server.TrueSight.TSTenant))
-	//fmt.Printf("Token has been set: %s", tsToken.getToken())
-	//http.HandleFunc("/", AlertHandler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.Error(w, "404 not found.", http.StatusNotFound)
 			return
 		}
-
-		//fmt.Printf("Token: %s", tsToken.getToken())
 
 		if r.Method == "POST" {
 			if !VerifyTSToken(tsToken.getToken(),
@@ -196,12 +197,12 @@ func (config Config) Run() {
 			}
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				print(err)
+				log.Fatal("Error reading response body", err)
 			}
 
 			var alerts Alerts
 			if err := json.Unmarshal(body, &alerts); err != nil {
-				log.Println("JSON unmarshaling has errors: ", err)
+				ErrorLogger.Println("JSON unmarshaling has errors: ", err)
 			}
 			var events []*TSEvent
 			for alert := range alerts.Alerts {
@@ -220,24 +221,18 @@ func (config Config) Run() {
 				}
 			}
 
-			//eventAttributes := NewTSEventAttributes("EVENT", "WARNING","Test Message", "Huba",
-			//	"Test", "Test")
-			//eventData := NewTSEvent("Test","", eventAttributes)
-
-			//events = append(events, eventData)
 			if events != nil {
 				if SendEventToTS(tsToken.getToken(), config.Server.TrueSight.TSIMServer, config.Server.TrueSight.TSIMPort, config.Server.TrueSight.TSCell, events) {
-					log.Println("Event sent to TrueSight.")
+					InfoLogger.Println("Event sent to TrueSight.")
 				} else {
-					log.Println("Failed to send event(s) to TrueSight.")
+					WarningLogger.Println("Failed to send event(s) to TrueSight.")
 					promAlertsCache.Add(RandomString(10), events, cache.DefaultExpiration)
 				}
 			}
-
-			//fmt.Print(string(body))
 		}
 	})
 	fmt.Println("Server started at port " + config.Server.ListenPort)
+	InfoLogger.Println("Server started at port " + config.Server.ListenPort)
 	log.Fatal(http.ListenAndServe(":"+config.Server.ListenPort, nil))
 }
 
@@ -249,47 +244,32 @@ func GetTSToken(tspsServer string, tspsPort string, tsUser string, tsUserPw stri
 	postDataJson, err := json.Marshal(postData)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error creating JSON Body: ", err)
 	}
 
-	//retries := 5
 	retryCount := 0
-
-	//for retryCount < retries {
 	for {
 		resp, err := http.Post(tokenUrl, "application/json", bytes.NewBuffer(postDataJson))
 		if err != nil {
-			log.Println(err)
-			//if retryCount == 4 {
-			//	os.Exit(3)
-			//} else {
+			ErrorLogger.Println("Error getting TS auth token: ", err)
 			time.Sleep(10 * time.Second)
 			retryCount++
-			//}
-
 		} else {
 			//resp.Body.Close()
 			rawData, _ := ioutil.ReadAll(resp.Body)
-			log.Println("Response: ", rawData)
+			InfoLogger.Println("Get TS auth token response: ", rawData)
 			var data map[string]map[string]interface{}
 			json.Unmarshal(rawData, &data)
-			/*if err := json.Unmarshal(rawData, &data); err != nil {
-				log.Println("token data received")
-				log.Fatal(err)
-			}*/
 			authToken = data["response"]["authToken"].(string)
 			break
-			//fmt.Println(authToken)
 		}
 	}
-	//fmt.Println("Auth Token is: " + authToken)
 	return authToken
 }
 
 func VerifyTSToken(token string, tspsServer string, tspsPort string) bool {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	tokenUrl := "https://" + tspsServer + ":" + tspsPort + "/tsws/api/v10.1/token"
-	//fmt.Println("Token: " + token)
 	req, err := http.NewRequest("GET", tokenUrl, nil)
 	if err != nil {
 		log.Fatal("Error reading request. ", err)
@@ -303,18 +283,15 @@ func VerifyTSToken(token string, tspsServer string, tspsPort string) bool {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to perform request: ", err)
 	} else {
 		defer resp.Body.Close()
 		rawData, _ := ioutil.ReadAll(resp.Body)
 		var data map[string]interface{}
 		if err := json.Unmarshal(rawData, &data); err != nil {
-			log.Fatal(err)
+			log.Fatal("Unable to transform alarm: ", err)
 		}
-		//statusCode := data["statusCode"].(string)
 		statusMsg := data["statusMsg"].(string)
-		//fmt.Println("Status Code: " + statusCode)
-		//fmt.Println("Status Message: " + statusMsg)
 		if statusMsg == "OK" {
 			return true
 		} else {
@@ -332,7 +309,7 @@ func SendEventToTS(token string, tsimServer string, tsimPort string, tsCell stri
 		log.Fatal(err)
 	}
 
-	fmt.Println(string(eventJSON))
+	InfoLogger.Println("Event ind JSON: ", string(eventJSON))
 	//evBody := string(eventJSON)
 	req, err := http.NewRequest("POST", eventUrl, bytes.NewBuffer(eventJSON))
 	if err != nil {
@@ -347,9 +324,9 @@ func SendEventToTS(token string, tsimServer string, tsimPort string, tsCell stri
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
+		ErrorLogger.Println(err)
 	} else {
-		fmt.Println(resp)
+		InfoLogger.Println(resp)
 		eventSendState = true
 	}
 	return eventSendState
@@ -358,7 +335,6 @@ func SendEventToTS(token string, tsimServer string, tsimPort string, tsCell stri
 func Heartbeat() {
 	// Heartbeat for self-monitoring
 	value := 0
-	fmt.Print("Heartbeat Value: ", value)
 	for true {
 		promalToTSOMHeartbeat.Set(float64(value))
 		if value == 0 {
@@ -366,10 +342,27 @@ func Heartbeat() {
 		} else {
 			value = 0
 		}
-		fmt.Println("Heartbeat Value: ", value)
 		time.Sleep(1 * time.Minute)
 	}
 }
+
+func InitLogging(logName string) {
+	file, err := os.OpenFile(logName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal("Unable to create logfile: ", err)
+	}
+
+	InfoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	WarningLogger = log.New(file, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+// Initialize Loggers
+var (
+	WarningLogger *log.Logger
+	InfoLogger    *log.Logger
+	ErrorLogger   *log.Logger
+)
 
 // Initiate Prometheus Alerts Cache
 var promAlertsCache = cache.New(60*time.Minute, 90*time.Minute)
@@ -381,31 +374,24 @@ var promalToTSOMHeartbeat = promauto.NewGauge(prometheus.GaugeOpts{
 func main() {
 	// Initialize logging
 	logFileName := "promalert2bmctsom.log"
-	logFile, err := os.OpenFile(logFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
-	if err != nil {
-		log.Fatal("Unable to create logfile: ", err)
-	}
-	log.SetOutput(logFile)
-	log.Println("Prometheus Alert to BMC TSOM Wrapper started")
+	InitLogging(logFileName)
+	InfoLogger.Println("Prometheus Alert to BMC TSOM Wrapper started")
 
 	cfgPath, err := ParseFlags()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to read config file: ", err)
 	}
 	cfg, err := NewConfig(cfgPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to read config file: ", err)
 	}
 	// start listening for Prometheus Alerts
 	go cfg.Run()
-	fmt.Println("Hello")
 
 	// Initialize prometheus metering
-
-	fmt.Println("starting heartbeat")
+	InfoLogger.Println("starting heartbeat")
 	go Heartbeat()
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":9596", nil)
+	http.ListenAndServe(cfg.Server.PromMetricPort, nil)
 	time.Sleep(1 * time.Second)
-
 }
