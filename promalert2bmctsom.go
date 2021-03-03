@@ -171,12 +171,14 @@ func RandomString(n int) string {
 }
 
 func (config Config) Run() {
+	fmt.Println("starting listening for prometheus alerts...")
 	tsToken := newTSToken(GetTSToken(
 		config.Server.TrueSight.TSPSServer,
 		config.Server.TrueSight.TSPSPort,
 		config.Server.TrueSight.TSUser,
 		config.Server.TrueSight.TSUserPw,
 		config.Server.TrueSight.TSTenant))
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.Error(w, "404 not found.", http.StatusNotFound)
@@ -187,7 +189,6 @@ func (config Config) Run() {
 			if !VerifyTSToken(tsToken.getToken(),
 				config.Server.TrueSight.TSPSServer,
 				config.Server.TrueSight.TSPSPort) {
-				//fmt.Println("Token verification failed. Obtaining new token.")
 				tsToken.setToken(GetTSToken(
 					config.Server.TrueSight.TSPSServer,
 					config.Server.TrueSight.TSPSPort,
@@ -255,7 +256,6 @@ func GetTSToken(tspsServer string, tspsPort string, tsUser string, tsUserPw stri
 			time.Sleep(10 * time.Second)
 			retryCount++
 		} else {
-			//resp.Body.Close()
 			rawData, _ := ioutil.ReadAll(resp.Body)
 			InfoLogger.Println("Get TS auth token response: ", rawData)
 			var data map[string]map[string]interface{}
@@ -334,6 +334,7 @@ func SendEventToTS(token string, tsimServer string, tsimPort string, tsCell stri
 
 func Heartbeat() {
 	// Heartbeat for self-monitoring
+	InfoLogger.Println("starting heartbeat...")
 	value := 0
 	for true {
 		promalToTSOMHeartbeat.Set(float64(value))
@@ -342,6 +343,7 @@ func Heartbeat() {
 		} else {
 			value = 0
 		}
+		InfoLogger.Println("Heartbeat value in loop: ", value)
 		time.Sleep(1 * time.Minute)
 	}
 }
@@ -390,8 +392,11 @@ func main() {
 
 	// Initialize prometheus metering
 	InfoLogger.Println("starting heartbeat")
+
+	//fmt.Println("starting heartbeat")
 	go Heartbeat()
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(cfg.Server.PromMetricPort, nil)
+	http.ListenAndServe(":"+cfg.Server.PromMetricPort, nil)
 	time.Sleep(1 * time.Second)
+
 }
