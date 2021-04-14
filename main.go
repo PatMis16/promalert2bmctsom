@@ -225,9 +225,11 @@ func (config Config) Run() {
 			if events != nil {
 				if SendEventToTS(tsToken.getToken(), config.Server.TrueSight.TSIMServer, config.Server.TrueSight.TSIMPort, config.Server.TrueSight.TSCell, events) {
 					InfoLogger.Println("Event sent to TrueSight.")
+					fmt.Fprintf(w, "Event(s) created")
 				} else {
 					WarningLogger.Println("Failed to send event(s) to TrueSight.")
 					promAlertsCache.Add(RandomString(10), events, cache.DefaultExpiration)
+					http.Error(w, "Something went wrong on the server!", http.StatusInternalServerError)
 				}
 			}
 		}
