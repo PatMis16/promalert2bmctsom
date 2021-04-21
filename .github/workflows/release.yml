@@ -17,13 +17,13 @@ jobs:
     - name: Install all Go dependencies
       run: go get gopkg.in/yaml.v2
     - name: Install all Go dependencies
-      run: go get github.com/patrickmn/go-cache
-    - name: Install all Go dependencies
-      run: go get github.com/prometheus/client_golang/prometheus
-    - name: Install all Go dependencies
-      run: go get github.com/prometheus/client_golang/prometheus/promauto
-    - name: Install all Go dependencies
-      run: go get github.com/prometheus/client_golang/prometheus/promhttp
+      run: go get github.com/patrickmn/go-cache github.com/prometheus/client_golang/prometheus go get github.com/prometheus/client_golang/prometheus/promauto go get github.com/prometheus/client_golang/prometheus/promhttp
+    #- name: Install all Go dependencies
+    #  run: go get github.com/prometheus/client_golang/prometheus
+    #- name: Install all Go dependencies
+    #  run: go get github.com/prometheus/client_golang/prometheus/promauto
+    #- name: Install all Go dependencies
+    #  run: go get github.com/prometheus/client_golang/prometheus/promhttp
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
