@@ -25,10 +25,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/patrickmn/go-cache"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	//"github.com/prometheus/client_golang/prometheus"
+	//"github.com/prometheus/client_golang/prometheus/promauto"
 	"gopkg.in/yaml.v2"
 )
 
@@ -229,7 +227,7 @@ func (config Config) Run() {
 					fmt.Fprintf(w, "Event(s) created")
 				} else {
 					WarningLogger.Println("Failed to send event(s) to TrueSight.")
-					promAlertsCache.Add(RandomString(10), events, cache.DefaultExpiration)
+					//promAlertsCache.Add(RandomString(10), events, cache.DefaultExpiration)
 					http.Error(w, "Something went wrong on the server!", http.StatusInternalServerError)
 				}
 			}
@@ -335,7 +333,7 @@ func SendEventToTS(token string, tsimServer string, tsimPort string, tsCell stri
 	return eventSendState
 }
 
-func Heartbeat() {
+/*func Heartbeat() {
 	// Heartbeat for self-monitoring
 	InfoLogger.Println("starting heartbeat...")
 	value := 0
@@ -349,7 +347,7 @@ func Heartbeat() {
 		InfoLogger.Println("Heartbeat value in loop: ", value)
 		time.Sleep(1 * time.Minute)
 	}
-}
+}*/
 
 func InitLogging(logName string) {
 	file, err := os.OpenFile(logName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -370,11 +368,11 @@ var (
 )
 
 // Initiate Prometheus Alerts Cache
-var promAlertsCache = cache.New(60*time.Minute, 90*time.Minute)
-var promalToTSOMHeartbeat = promauto.NewGauge(prometheus.GaugeOpts{
-	Name: "prometheus_alerts_to_tsom_heartbeat",
-	Help: "Prometheus Alerts to TrueSight",
-})
+//var promAlertsCache = cache.New(60*time.Minute, 90*time.Minute)
+//var promalToTSOMHeartbeat = promauto.NewGauge(prometheus.GaugeOpts{
+//	Name: "prometheus_alerts_to_tsom_heartbeat",
+//	Help: "Prometheus Alerts to TrueSight",
+//})
 
 func main() {
 	// Initialize logging
@@ -397,9 +395,9 @@ func main() {
 	InfoLogger.Println("starting heartbeat")
 
 	//fmt.Println("starting heartbeat")
-	go Heartbeat()
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":"+cfg.Server.PromMetricPort, nil)
+	//go Heartbeat()
+	//http.Handle("/metrics", promhttp.Handler())
+	//http.ListenAndServe(":"+cfg.Server.PromMetricPort, nil)
 	time.Sleep(1 * time.Second)
 
 }
