@@ -39,8 +39,16 @@ jobs:
     steps:
     - uses: actions/checkout@master
     # install dependencies
-    - name: Install all Go dependencies
+    - name: Install gopkg.in/yaml.v2
       run: go get gopkg.in/yaml.v2
+    - name: Install github.com/patrickmn/go-cache
+      run: go get github.com/patrickmn/go-cache
+    - name: Install github.com/prometheus/client_golang/prometheus
+      run: go get github.com/prometheus/client_golang/prometheus
+    - name: Install github.com/prometheus/client_golang/prometheus/promauto
+      run: go get github.com/prometheus/client_golang/prometheus/promauto
+    - name: Install github.com/prometheus/client_golang/prometheus/promhttp
+      run: go get github.com/prometheus/client_golang/prometheus/promhttp
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -49,14 +57,22 @@ jobs:
         GOOS: linux
         EXTRA_FILES: "README.md config.yml"
   release-linux-arm:
-    name: release linux/386
+    name: release linux/arm
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
-    - name: Install all Go dependencies
+    - name: Install gopkg.in/yaml.v2
       run: go get gopkg.in/yaml.v2
+    - name: Install github.com/patrickmn/go-cache
+      run: go get github.com/patrickmn/go-cache
+    - name: Install github.com/prometheus/client_golang/prometheus
+      run: go get github.com/prometheus/client_golang/prometheus
+    - name: Install github.com/prometheus/client_golang/prometheus/promauto
+      run: go get github.com/prometheus/client_golang/prometheus/promauto
+    - name: Install github.com/prometheus/client_golang/prometheus/promhttp
+      run: go get github.com/prometheus/client_golang/prometheus/promhttp
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -65,14 +81,22 @@ jobs:
         GOOS: linux
         EXTRA_FILES: "README.md config.yml"
   release-linux-arm64:
-    name: release linux/amd64
+    name: release linux/arm64
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
-    - name: Install all Go dependencies
+    - name: Install gopkg.in/yaml.v2
       run: go get gopkg.in/yaml.v2
+    - name: Install github.com/patrickmn/go-cache
+      run: go get github.com/patrickmn/go-cache
+    - name: Install github.com/prometheus/client_golang/prometheus
+      run: go get github.com/prometheus/client_golang/prometheus
+    - name: Install github.com/prometheus/client_golang/prometheus/promauto
+      run: go get github.com/prometheus/client_golang/prometheus/promauto
+    - name: Install github.com/prometheus/client_golang/prometheus/promhttp
+      run: go get github.com/prometheus/client_golang/prometheus/promhttp
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -87,8 +111,16 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
-    - name: Install all Go dependencies
+    - name: Install gopkg.in/yaml.v2
       run: go get gopkg.in/yaml.v2
+    - name: Install github.com/patrickmn/go-cache
+      run: go get github.com/patrickmn/go-cache
+    - name: Install github.com/prometheus/client_golang/prometheus
+      run: go get github.com/prometheus/client_golang/prometheus
+    - name: Install github.com/prometheus/client_golang/prometheus/promauto
+      run: go get github.com/prometheus/client_golang/prometheus/promauto
+    - name: Install github.com/prometheus/client_golang/prometheus/promhttp
+      run: go get github.com/prometheus/client_golang/prometheus/promhttp
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -103,8 +135,16 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
-    - name: Install all Go dependencies
+    - name: Install gopkg.in/yaml.v2
       run: go get gopkg.in/yaml.v2
+    - name: Install github.com/patrickmn/go-cache
+      run: go get github.com/patrickmn/go-cache
+    - name: Install github.com/prometheus/client_golang/prometheus
+      run: go get github.com/prometheus/client_golang/prometheus
+    - name: Install github.com/prometheus/client_golang/prometheus/promauto
+      run: go get github.com/prometheus/client_golang/prometheus/promauto
+    - name: Install github.com/prometheus/client_golang/prometheus/promhttp
+      run: go get github.com/prometheus/client_golang/prometheus/promhttp
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
@@ -119,8 +159,16 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - uses: actions/checkout@master
-    - name: Install all Go dependencies
+    - name: Install gopkg.in/yaml.v2
       run: go get gopkg.in/yaml.v2
+    - name: Install github.com/patrickmn/go-cache
+      run: go get github.com/patrickmn/go-cache
+    - name: Install github.com/prometheus/client_golang/prometheus
+      run: go get github.com/prometheus/client_golang/prometheus
+    - name: Install github.com/prometheus/client_golang/prometheus/promauto
+      run: go get github.com/prometheus/client_golang/prometheus/promauto
+    - name: Install github.com/prometheus/client_golang/prometheus/promhttp
+      run: go get github.com/prometheus/client_golang/prometheus/promhttp
     - name: compile and release
       uses: ngs/go-release.action@v1.0.1
       env:
