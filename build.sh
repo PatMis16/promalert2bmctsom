@@ -3,7 +3,7 @@
 set -eux
 
 PROJECT_ROOT="/go/src/github.com/${GITHUB_REPOSITORY}"
-
+PROJECT_NAME=$(echo ${GITHUB_REPOSITORY} | awk -F'.' '{print $1}')
 mkdir -p $PROJECT_ROOT
 rmdir $PROJECT_ROOT
 ln -s $GITHUB_WORKSPACE $PROJECT_ROOT
