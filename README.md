@@ -16,6 +16,7 @@ listening port of the wrapper and data to connect to TrueSight.
 ```yaml
 server:
   listen-port: <Listen Port e.g. 9595>
+  prom-metric-port: <Port providing Prometheus metrics 9596>
   truesight:
     tsps-server: "<TSPS Server Name>"
     tsps-port: <TSPS Server Port e.g. 8043>
@@ -67,3 +68,10 @@ MC_EV_CLASS:
    };
 END
 ```
+
+## Heartbeat
+
+The Go-Program is able to generate Prometheus metrics. Among this metrics is a heartbeat metric under the name 
+'prometheus_alerts_to_tsom_heartbeat'. The metric writes the values 0 and 100 in intervals. This enables the alert
+manager to generate Prometheus alerts can be sent to TrueSight. In TrueSight a mechanism can be implemented to
+check if those events are received on a regular basis. 
