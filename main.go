@@ -22,6 +22,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gopkg.in/yaml.v2"
+	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -55,7 +56,12 @@ func NewConfig(configPath string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+
+		}
+	}(file)
 
 	d := yaml.NewDecoder(file)
 
@@ -101,8 +107,8 @@ type TSEventAttributes struct {
 	McObjectURI   string `json:"mc_object_uri"`
 }
 
-func NewTSEventAttributes(CLASS string, severity string, msg string, mc_object_class string, mc_object string, mc_parameter string, mc_object_uri string) *TSEventAttributes {
-	return &TSEventAttributes{CLASS: CLASS, Severity: severity, Msg: msg, McObjectClass: mc_object_class, McObject: mc_object, McParameter: mc_parameter, McObjectURI: mc_object_uri}
+func NewTSEventAttributes(CLASS string, severity string, msg string, mcObjectClass string, mcObject string, mcParameter string, mcObjectUri string) *TSEventAttributes {
+	return &TSEventAttributes{CLASS: CLASS, Severity: severity, Msg: msg, McObjectClass: mcObjectClass, McObject: mcObject, McParameter: mcParameter, McObjectURI: mcObjectUri}
 }
 
 type TSEvent struct {
@@ -225,10 +231,16 @@ func (config Config) Run() {
 			if events != nil {
 				if SendEventToTS(tsToken.getToken(), config.Server.TrueSight.TSIMServer, config.Server.TrueSight.TSIMPort, config.Server.TrueSight.TSCell, events) {
 					InfoLogger.Println("Event sent to TrueSight.")
-					fmt.Fprintf(w, "Event(s) created")
+					_, err := fmt.Fprintf(w, "Event(s) created")
+					if err != nil {
+						return
+					}
 				} else {
 					WarningLogger.Println("Failed to send event(s) to TrueSight.")
-					promAlertsCache.Add(RandomString(10), events, cache.DefaultExpiration)
+					err := promAlertsCache.Add(RandomString(10), events, cache.DefaultExpiration)
+					if err != nil {
+						return
+					}
 					http.Error(w, "Something went wrong on the server!", http.StatusInternalServerError)
 				}
 			}
@@ -261,7 +273,10 @@ func GetTSToken(tspsServer string, tspsPort string, tsUser string, tsUserPw stri
 			rawData, _ := ioutil.ReadAll(resp.Body)
 			InfoLogger.Println("Get TS auth token response: ", rawData)
 			var data map[string]map[string]interface{}
-			json.Unmarshal(rawData, &data)
+			err := json.Unmarshal(rawData, &data)
+			if err != nil {
+				return ""
+			}
 			authToken = data["response"]["authToken"].(string)
 			break
 		}
@@ -287,7 +302,12 @@ func VerifyTSToken(token string, tspsServer string, tspsPort string) bool {
 	if err != nil {
 		log.Fatal("Unable to perform request: ", err)
 	} else {
-		defer resp.Body.Close()
+		defer func(Body io.ReadCloser) {
+			err := Body.Close()
+			if err != nil {
+
+			}
+		}(resp.Body)
 		rawData, _ := ioutil.ReadAll(resp.Body)
 		var data map[string]interface{}
 		if err := json.Unmarshal(rawData, &data); err != nil {
@@ -398,7 +418,10 @@ func main() {
 	fmt.Println("starting heartbeat")
 	go Heartbeat()
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":"+cfg.Server.PromMetricPort, nil)
+	err = http.ListenAndServe(":"+cfg.Server.PromMetricPort, nil)
+	if err != nil {
+		return
+	}
 	time.Sleep(1 * time.Second)
 
 }
