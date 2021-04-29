@@ -2,7 +2,10 @@
 #  push:
 #    tags:
 #      - 'v[0-9]+.*'
-on: release
+on:
+  release:
+      types: [ published ]
+
 
 name: Build Release
 jobs:
